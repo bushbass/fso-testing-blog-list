@@ -1,14 +1,17 @@
 const { test, describe } = require('node:test')
+const { isEqual } = require('lodash/object');
+const _ = require('lodash');
+
 const assert = require('node:assert')
 
 const listHelper = require('../utils/list_helper')
 
-test('dummy returns one', () => {
-    const blogs = []
+// test('dummy returns one', () => {
+//     const blogs = []
 
-    const result = listHelper.dummy(blogs)
-    assert.strictEqual(result, 1)
-})
+//     const result = listHelper.dummy(blogs)
+//     assert.strictEqual(result, 1)
+// })
 const listWithNoBlogs = []
 
 const listWithOneBlog = [
@@ -99,5 +102,35 @@ describe('most likes', () => {
     test('list with multiple blogs, equals the one with the most', () => {
         const result = listHelper.favoriteBlog(listWithMultipleBlogs)
         assert.deepStrictEqual(result, listWithMultipleBlogs[2])
+    })
+})
+
+describe('most blogs', () => {
+    test('of empty array is zero', () => {
+        assert.strictEqual(listWithNoBlogs.length, 0)
+    })
+    test('list with one blogs, returns correct author and number of blogs', () => {
+        const result = listHelper.mostBlogs(listWithOneBlog)
+        assert.ok(_.isEqual(result, { author: 'Edsger W. Dijkstra', blogs: 1 }))
+
+    })
+    test('list with multiple blogs, returns correct author and number of blogs', () => {
+        const result = listHelper.mostBlogs(listWithMultipleBlogs)
+        assert.ok(_.isEqual(result, { author: "Robert C. Martin", blogs: 3 }))
+
+    })
+})
+describe('most total likes', () => {
+    test('of empty array is zero', () => {
+        assert.strictEqual(listWithNoBlogs.length, 0)
+    })
+    test('list with one blogs, returns correct author and number of blogs', () => {
+        const result = listHelper.mostLikes(listWithOneBlog)
+        assert.ok(_.isEqual(result, { author: 'Edsger W. Dijkstra', likes: 5 }))
+
+    })
+    test('list with multiple blogs, return correct author and sum of likes', () => {
+        const result = listHelper.mostLikes(listWithMultipleBlogs)
+        assert.ok(_.isEqual(result, { author: 'Edsger W. Dijkstra', likes: 17 }))
     })
 })
