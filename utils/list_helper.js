@@ -64,19 +64,16 @@ const mostLikes = (blogs) => {
                 mostLikedName = name;
             }
         }
-        console.log({
-            author: mostLikedName,
-            likes: mostLikes
-        })
+        // console.log({
+        //     author: mostLikedName,
+        //     likes: mostLikes
+        // })
 
         return { author: mostLikedName, likes: mostLikes };
     }
 
-
-
     return getMostLikedEntry(authors);
 }
-
 
 module.exports = {
     dummy, totalLikes, favoriteBlog, mostBlogs, mostLikes
