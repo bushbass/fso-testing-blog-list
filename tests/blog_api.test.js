@@ -99,8 +99,30 @@ test('if likes is empty, adds 0 to likes', async () => {
         .send(newBlog)
 
     assert.deepStrictEqual(result.body.likes, 0)
+})
 
-    console.log(result.body)
+test('if title is empty, expect 400 response', async () => {
+    const newBlog = {
+        author: "Edsger W. Dijkstra",
+        url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
+        likes: 3
+    }
+    const result = await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(400)
+})
+
+test('if url is empty, expect 400 response', async () => {
+    const newBlog = {
+        title: "Canonical string reduction",
+        author: "Edsger W. Dijkstra",
+        likes: 4
+    }
+    const result = await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(400)
 })
 
 test('blog without title is not added', async () => {
