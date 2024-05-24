@@ -39,11 +39,13 @@ test('blogs are returned as json', async () => {
         .expect(200)
         .expect('Content-Type', /application\/json/)
 })
+
 test('expect _id to be changed to id', async () => {
     await api
     const response = await api.get('/api/blogs')
     assert.ok(response.body[0].hasOwnProperty('id'), 'User object should have an "id" field');
 })
+
 test('expect there should be no _id field', async () => {
     await api
     const response = await api.get('/api/blogs')
@@ -73,7 +75,6 @@ test('a valid blog can be added ', async () => {
         url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
         likes: 12,
     }
-
     await api
         .post('/api/blogs')
         .send(newBlog)
@@ -83,9 +84,23 @@ test('a valid blog can be added ', async () => {
     const blogsAtEnd = await helper.blogsInDb()
     assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
 
-
     const titles = blogsAtEnd.map(n => n.title)
     assert(titles.includes('Canonical string reduction'))
+})
+
+test('if likes is empty, adds 0 to likes', async () => {
+    const newBlog = {
+        title: "Canonical string reduction",
+        author: "Edsger W. Dijkstra",
+        url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
+    }
+    const result = await api
+        .post('/api/blogs')
+        .send(newBlog)
+
+    assert.deepStrictEqual(result.body.likes, 0)
+
+    console.log(result.body)
 })
 
 test('blog without title is not added', async () => {
