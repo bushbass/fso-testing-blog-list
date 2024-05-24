@@ -39,6 +39,16 @@ test('blogs are returned as json', async () => {
         .expect(200)
         .expect('Content-Type', /application\/json/)
 })
+test('expect _id to be changed to id', async () => {
+    await api
+    const response = await api.get('/api/blogs')
+    assert.ok(response.body[0].hasOwnProperty('id'), 'User object should have an "id" field');
+})
+test('expect there should be no _id field', async () => {
+    await api
+    const response = await api.get('/api/blogs')
+    assert.ok(!response.body[0].hasOwnProperty('_id'), 'User object should not have an "_id" field');
+})
 
 after(async () => {
     await mongoose.connection.close()
