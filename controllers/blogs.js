@@ -15,7 +15,7 @@ blogsRouter.get('/:id', async (request, response, next) => {
     if (blog) {
         response.json(blog)
     } else {
-        response.status(404).end()
+        response.status(401).end()
     }
 
 })
@@ -24,6 +24,8 @@ blogsRouter.get('/:id', async (request, response, next) => {
 blogsRouter.post('/', async (request, response, next) => {
     const body = request.body
     const decodedToken = jwt.verify(request.token, process.env.SECRET)
+    console.log({ decodedToken })
+
     if (!decodedToken.id) {
         return response.status(401).json({ error: 'token invalid' })
     }
@@ -46,11 +48,11 @@ blogsRouter.post('/', async (request, response, next) => {
 
 })
 
-blogsRouter.delete('/:id', async (request, response, next) => {
-    const blogToDelete = await Blog.findByIdAndDelete(request.params.id)
-    response.status(204).end()
+// blogsRouter.delete('/:id', async (request, response, next) => {
+//     const blogToDelete = await Blog.findByIdAndDelete(request.params.id)
+//     response.status(204).end()
 
-})
+// })
 
 blogsRouter.put('/:id', async (request, response, next) => {
     const body = request.body
@@ -64,6 +66,32 @@ blogsRouter.put('/:id', async (request, response, next) => {
 
     const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true })
     response.json(updatedBlog)
+})
+
+blogsRouter.delete('/:id', async (request, response, next) => {
+    const decodedToken = jwt.verify(request.token, process.env.SECRET)
+    console.log({ decodedToken })
+
+    if (!decodedToken.id) {
+        return response.status(401).json({ error: 'token invalid' })
+    }
+
+
+    // req.params.id is the blog's id
+    // so get the blog using req.params
+    const blog = await Blog.findById(request.params.id)
+    console.log({ blog })
+    // this includes the authors userId
+    // compare logged in userId with id from blog before proceeding
+    if (blog.user.toString() === decodedToken.id.toString()) {
+        console.log('blog user and token id match')
+        const deletedBlog = await Blog.findByIdAndDelete(request.params.id)
+        response.send(deletedBlog)
+    }
+    else {
+        console.log('blog user and token id dont match')
+        response.status(401).send({ message: "blog not owned by current user" })
+    }
 })
 
 module.exports = blogsRouter
