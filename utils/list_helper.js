@@ -64,10 +64,7 @@ const mostLikes = (blogs) => {
                 mostLikedName = name;
             }
         }
-        // console.log({
-        //     author: mostLikedName,
-        //     likes: mostLikes
-        // })
+
 
         return { author: mostLikedName, likes: mostLikes };
     }
