@@ -3,6 +3,8 @@ const assert = require('node:assert')
 const helper = require('./test_helper')
 const bcryptjs = require('bcryptjs')
 const User = require('../models/user')
+const middleware = require('../utils/middleware')
+const jwt = require('jsonwebtoken')
 
 const mongoose = require('mongoose')
 const supertest = require('supertest')
@@ -180,22 +182,35 @@ describe('when there is initially some blogs saved', () => {
     })
     describe('when a blog is deleted', () => {
         test('a blog can be deleted', async () => {
-            const blogsAtStart = await helper.blogsInDb()
-            const blogToDelete = blogsAtStart[0]
-            console.log({ blogsAtStart })
 
             const loginResult = await api.post('/api/login')
                 .send({ username: 'root', "password": 'sekret' })
             const token = await JSON.parse(loginResult.text).token
+            const username = await JSON.parse(loginResult.text).username
+            const decodedToken = jwt.verify(token, process.env.SECRET)
+            const newBlog = {
+                title: "Canonical string reduction",
+                author: "Edsger W. Dijkstra",
+                url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
+                likes: 12,
+                userId: decodedToken.id
+            }
+            await api
+                .post('/api/blogs')
+                .set('Authorization', `Bearer ${token}`)
+                .send(newBlog)
+            const blogsAtStart = await helper.blogsInDb()
+            const blogToDelete = blogsAtStart[0]
+
 
             await api
-                .delete(`/api/blogs/${blogToDelete.id}`)
+                .delete(`/api/blogs/${blogsAtStart[2].id}`)
                 .set('Authorization', `Bearer ${token}`)
                 .expect(204)
             const blogsAtEnd = await helper.blogsInDb()
             const titles = blogsAtEnd.map(r => r.title)
-            assert(!titles.includes(blogToDelete.title))
-            assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length - 1)
+            assert(!titles.includes(blogsAtStart[2].title))
+            assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
         })
     })
 
