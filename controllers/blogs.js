@@ -2,12 +2,11 @@ const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 const User = require('../models/user')
 const jwt = require('jsonwebtoken')
+const middleware = require('../utils/middleware')
 
 blogsRouter.get('/', async (request, response) => {
     const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 })
-
     response.json(blogs)
-
 })
 
 blogsRouter.get('/:id', async (request, response, next) => {
@@ -17,14 +16,11 @@ blogsRouter.get('/:id', async (request, response, next) => {
     } else {
         response.status(401).end()
     }
-
 })
 
-
-blogsRouter.post('/', async (request, response, next) => {
+blogsRouter.post('/', middleware.userExtractor, async (request, response, next) => {
     const body = request.body
     const decodedToken = jwt.verify(request.token, process.env.SECRET)
-    console.log({ decodedToken })
 
     if (!decodedToken.id) {
         return response.status(401).json({ error: 'token invalid' })
@@ -48,13 +44,7 @@ blogsRouter.post('/', async (request, response, next) => {
 
 })
 
-// blogsRouter.delete('/:id', async (request, response, next) => {
-//     const blogToDelete = await Blog.findByIdAndDelete(request.params.id)
-//     response.status(204).end()
-
-// })
-
-blogsRouter.put('/:id', async (request, response, next) => {
+blogsRouter.put('/:id', middleware.userExtractor, async (request, response, next) => {
     const body = request.body
 
     const blog = {
@@ -68,25 +58,18 @@ blogsRouter.put('/:id', async (request, response, next) => {
     response.json(updatedBlog)
 })
 
-blogsRouter.delete('/:id', async (request, response, next) => {
+blogsRouter.delete('/:id', middleware.userExtractor, async (request, response, next) => {
     const decodedToken = jwt.verify(request.token, process.env.SECRET)
-    console.log({ decodedToken })
 
     if (!decodedToken.id) {
         return response.status(401).json({ error: 'token invalid' })
     }
 
-
-    // req.params.id is the blog's id
-    // so get the blog using req.params
     const blog = await Blog.findById(request.params.id)
-    console.log({ blog })
-    // this includes the authors userId
-    // compare logged in userId with id from blog before proceeding
     if (blog.user.toString() === decodedToken.id.toString()) {
         console.log('blog user and token id match')
         const deletedBlog = await Blog.findByIdAndDelete(request.params.id)
-        response.send(deletedBlog)
+        response.status(204).send(deletedBlog)
     }
     else {
         console.log('blog user and token id dont match')

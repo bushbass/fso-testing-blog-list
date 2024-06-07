@@ -24,7 +24,6 @@ const userExtractor = (request, response, next) => {
     const decodedToken = jwt.verify(request.token, process.env.SECRET)
     if (decodedToken) {
         request.id = decodedToken.id
-        console.log('req.id from middleware ->', request.id)
     } else {
         console.log('no decoded token found')
     }

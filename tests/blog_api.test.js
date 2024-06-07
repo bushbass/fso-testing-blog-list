@@ -30,6 +30,7 @@ const initialBlogs = [{
 
 describe('when there is initially some blogs saved', () => {
     beforeEach(async () => {
+
         await Blog.deleteMany({})
         let blogObject = new Blog(helper.initialBlogs[0])
         await blogObject.save()
@@ -62,6 +63,8 @@ describe('when there is initially some blogs saved', () => {
         assert(titles.includes('Go To Statement Considered Harmful'))
     })
     describe('when a new blog is added', () => {
+
+
         test('a valid blog can be added ', async () => {
             const newBlog = {
                 title: "Canonical string reduction",
@@ -69,8 +72,14 @@ describe('when there is initially some blogs saved', () => {
                 url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
                 likes: 12,
             }
+
+            const loginResult = await api.post('/api/login')
+                .send({ username: 'root', "password": 'sekret' })
+            const token = await JSON.parse(loginResult.text).token
+
             await api
                 .post('/api/blogs')
+                .set('Authorization', `Bearer ${token}`)
                 .send(newBlog)
                 .expect(201)
                 .expect('Content-Type', /application\/json/)
@@ -88,8 +97,15 @@ describe('when there is initially some blogs saved', () => {
                 author: "Edsger W. Dijkstra",
                 url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
             }
+            await api
+            const loginResult = await api.post('/api/login')
+                .send({ username: 'root', "password": 'sekret' })
+            const token = await JSON.parse(loginResult.text).token
+
+
             const result = await api
                 .post('/api/blogs')
+                .set('Authorization', `Bearer ${token}`)
                 .send(newBlog)
 
             assert.deepStrictEqual(result.body.likes, 0)
@@ -101,8 +117,14 @@ describe('when there is initially some blogs saved', () => {
                 url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
                 likes: 3
             }
+            await api
+            const loginResult = await api.post('/api/login')
+                .send({ username: 'root', "password": 'sekret' })
+            const token = await JSON.parse(loginResult.text).token
+
             const result = await api
                 .post('/api/blogs')
+                .set('Authorization', `Bearer ${token}`)
                 .send(newBlog)
                 .expect(400)
         })
@@ -113,8 +135,14 @@ describe('when there is initially some blogs saved', () => {
                 author: "Edsger W. Dijkstra",
                 likes: 4
             }
+            await api
+            const loginResult = await api.post('/api/login')
+                .send({ username: 'root', "password": 'sekret' })
+            const token = await JSON.parse(loginResult.text).token
+
             const result = await api
                 .post('/api/blogs')
+                .set('Authorization', `Bearer ${token}`)
                 .send(newBlog)
                 .expect(400)
         })
@@ -125,9 +153,13 @@ describe('when there is initially some blogs saved', () => {
                 url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
                 likes: 12,
             }
+            const loginResult = await api.post('/api/login')
+                .send({ username: 'root', "password": 'sekret' })
+            const token = await JSON.parse(loginResult.text).token
 
             await api
                 .post('/api/blogs')
+                .set('Authorization', `Bearer ${token}`)
                 .send(newBlog)
                 .expect(400)
             const blogsAtEnd = await helper.blogsInDb()
@@ -150,8 +182,15 @@ describe('when there is initially some blogs saved', () => {
         test('a blog can be deleted', async () => {
             const blogsAtStart = await helper.blogsInDb()
             const blogToDelete = blogsAtStart[0]
+            console.log({ blogsAtStart })
+
+            const loginResult = await api.post('/api/login')
+                .send({ username: 'root', "password": 'sekret' })
+            const token = await JSON.parse(loginResult.text).token
+
             await api
                 .delete(`/api/blogs/${blogToDelete.id}`)
+                .set('Authorization', `Bearer ${token}`)
                 .expect(204)
             const blogsAtEnd = await helper.blogsInDb()
             const titles = blogsAtEnd.map(r => r.title)
@@ -168,6 +207,8 @@ describe('when there is initially some blogs saved', () => {
             const user = new User({ username: 'root', passwordHash })
 
             await user.save()
+
+
         })
 
         test('creation succeeds with a fresh username', async () => {
@@ -191,6 +232,7 @@ describe('when there is initially some blogs saved', () => {
             const usernames = usersAtEnd.map(u => u.username)
             assert(usernames.includes(newUser.username))
         })
+
 
         test('creation fails with proper statuscode and message if username already taken', async () => {
             const usersAtStart = await helper.usersInDb()
